@@ -3,37 +3,37 @@ using UnityEngine;
 
 public static class QuestionBank
 {
-    public const byte POOLSIZE = 15;
-    public const byte correctAnswId = 3;
-    public const int ez = 100;
-    public const int med = 100;
-    public const int hard = 100;
+    private const byte PoolSize = 15;
+    private const byte CorrectAnswId = 3;
+    private const int Ez = 100;
+    private const int Med = 100;
+    private const int Hard = 100;
     public static List<List<Question>> Questions { get; set; }
 
     public static Question[] GetQuestionPool(out string[] correctAnswers, Player player = null)
     {
         List<int> usedIds = new List<int>();
-        correctAnswers = new string[POOLSIZE];
-        var qs = new Question[POOLSIZE];
-        for (byte i = 0; i < POOLSIZE; i++)
+        correctAnswers = new string[PoolSize];
+        var qs = new Question[PoolSize];
+        for (byte i = 0; i < PoolSize; i++)
         {
             int dif = i >= 11 ? 2 : i >= 6 ? 1 : 0;
             qs[i] = GetRandomQuestion(dif, qs, player, usedIds);
-            correctAnswers[i] = qs[i].answers[correctAnswId];
+            correctAnswers[i] = qs[i].answers[CorrectAnswId];
         }
 
-        string ss = "";
-        foreach (var q in qs) ss += $"qid: {q.id} \nq: {q.question} \n---\n";
-        Debug.LogWarning(ss);
+        // string ss = "";
+        // foreach (var q in qs) ss += $"qid: {q.id} \nq: {q.question} \n---\n";
+        // Debug.LogWarning(ss);
         return qs;
     }
 
     // подправить потом ids
     private static Question GetRandomQuestion(int difficulty, Question[] qs, Player player, List<int> usedIds)
     {
-        int size = difficulty == 0 ? ez : difficulty == 1 ? med : hard;
+        int size = difficulty == 0 ? Ez : difficulty == 1 ? Med : Hard;
         int id = Random.Range(0, size);
-        for (int i = 0; i < POOLSIZE; i++)
+        for (int i = 0; i < PoolSize; i++)
         {
             id = Random.Range(0, size);
             if (usedIds.Contains(id))

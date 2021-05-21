@@ -18,7 +18,7 @@ class MainMenuViewController : MonoBehaviour
     private void Start()
     {
         am = AudioManager.Instance;
-        player = GetComponent<MainMenuController>().p;
+        player = GetComponent<MainMenuController>().Player;
         profit.text = "$ " + player.Money; // написать money prettifier
     }
 

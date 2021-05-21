@@ -5,8 +5,8 @@ using Random = System.Random;
 public class PlayerSession : MonoBehaviour
 {
     private const int PoolSize = 15;
-    public TextAsset textQ;
-    public int currentQuestionNum;
+    [SerializeField] private TextAsset textQ;
+    private int currentQuestionNum;
     private string[] answers;
     private readonly bool[] hints = {true, true, true, true};
     
@@ -25,11 +25,11 @@ public class PlayerSession : MonoBehaviour
     {
         Debug.Log("Started!");
         // set player
-        p = new Player(new TempGetter().LoadPlayerData());
+        p = new Player(TempGetter.LoadPlayerData());
         
         // additional load
         if (QuestionBank.Questions == null || QuestionBank.Questions.Count < 1)
-            QuestionBank.Questions = new TempGetter(textQ.text).LoadQuestionBank();
+            QuestionBank.Questions = TempGetter.LoadQuestionBank(textQ.text);
 
         // get questions for session
         questions = QuestionBank.GetQuestionPool(out answers, p);
@@ -229,7 +229,7 @@ public class PlayerSession : MonoBehaviour
     
     private void SaveData()
     {
-        if (p != null) new TempGetter().SavePlayerData(p.GetData());
+        if (p != null) TempGetter.SavePlayerData(p.GetData());
     }
     private void OnApplicationPause(bool pause)
     {

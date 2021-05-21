@@ -2,39 +2,18 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-public class TempGetter : IQuestionLoader, IPlayerSaver
+public class TempGetter
 {
-    public string text;
+    public static PlayerData LoadPlayerData() => DataSaver.LoadData<PlayerData>("player") ?? new PlayerData();
 
-    public TempGetter(string text)
-    {
-        this.text = text;
-    }
+    public static void SavePlayerData(PlayerData p) => DataSaver.SaveData(p, "player");
 
-    public TempGetter()
-    {
-        text = "";
-    }
-
-    public PlayerData LoadPlayerData()
-    {
-        return DataSaver.LoadData<PlayerData>("player") ?? new PlayerData();
-    }
-
-    public void SavePlayerData(PlayerData p)
-    {
-        DataSaver.SaveData(p, "player");
-    }
-
-    public List<List<Question>> LoadQuestionBank()
+    public static List<List<Question>> LoadQuestionBank(string text)
     {
         object resultValue = JsonConvert.DeserializeObject<List<Question>>(text);
         var q1 = (List<Question>) Convert.ChangeType(resultValue, typeof(List<Question>));
         q1 = QuestionsHandler.ReplaceStars(q1);
-        var bank = new List<List<Question>>();
-        bank.Add(q1);
-        bank.Add(q1);
-        bank.Add(q1);
+        var bank = new List<List<Question>> {q1, q1, q1};
 
         return bank;
     }

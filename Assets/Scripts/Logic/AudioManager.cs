@@ -12,7 +12,6 @@ public class AudioManager : MonoBehaviour
     // 2 is true; 1 is false; 0 is true;
     private bool GetMusic => PlayerPrefs.GetInt("music") == 2 || PlayerPrefs.GetInt("music") == 0;
     private bool GetSound => PlayerPrefs.GetInt("sound") == 2 || PlayerPrefs.GetInt("sound") == 0;
-
     public static AudioManager Instance { get; private set; }
 
     // Start is called before the first frame update
@@ -39,13 +38,13 @@ public class AudioManager : MonoBehaviour
         PlayTheme();
     }
 
-    public void PlayTheme()
+    private void PlayTheme()
     {
         if (isMusicOn)
             Play("Theme");
     }
 
-    public void StopTheme()
+    private void StopTheme()
     {
         var s = Array.Find(sounds, sound => sound.name == "Theme");
         if (s == null)
@@ -57,13 +56,10 @@ public class AudioManager : MonoBehaviour
         s.source.Stop();
     }
 
-    public void Play(string name)
+    public void Play(string soundName)
     {
-        var s = Array.Find(sounds, sound => sound.name == name);
-        if (s == null)
-            // Debug.LogWarning("sound is NULL");
-            return;
-        s.source.Play();
+        var s = Array.Find(sounds, sound => sound.name == soundName);
+        s?.source.Play();
     }
 
     public void Click()

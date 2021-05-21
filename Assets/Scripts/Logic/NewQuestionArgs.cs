@@ -45,7 +45,7 @@ public class HintArgs : EventArgs
     public MyHint hint;
     public int correctChoice;
 }
-
+// TODO: do smth with this
 public enum GameState
 {
     Answering,
