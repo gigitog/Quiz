@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class QuestionViewController : MonoBehaviour
 {
-    private const int Poolsize = 15;
+    private const int PoolSize = 15;
 
     [HideInInspector] public PlayerSession ps;
 
@@ -28,6 +28,9 @@ public class QuestionViewController : MonoBehaviour
     public GameObject endGamePanel;
     public Text endGamePrizeText;
     public GameObject prizePanel;
+    public Text fireProfit;
+    public Text nextPrizeText;
+    public Text nextQuestion;
     public GameObject hintPanel;
     public Text hintLetter;
     private readonly Color blue = new Color(158 / 255f, 225 / 255f, 253 / 255f);
@@ -187,7 +190,7 @@ public class QuestionViewController : MonoBehaviour
        
         if (!correct)
             ShowGameEnd(qNum, qNum > 0 ? Player.GetLosePrize(qNum - 1) : 0);
-        else if (qNum == Poolsize - 1)
+        else if (qNum == PoolSize - 1)
             ShowGameEnd(qNum, Player.prizes[qNum]);
         else
             ShowPrizePanel(qNum);
@@ -195,7 +198,7 @@ public class QuestionViewController : MonoBehaviour
 
     private void ShowGameEnd(int qNum, long prize)
     {
-        if (qNum == Poolsize - 1) Debug.Log("WIN");
+        if (qNum == PoolSize - 1) Debug.Log("WIN");
         else Debug.Log("LOSE/EXIT");
 
         endGamePrizeText.text = "$ " + prize;
@@ -210,8 +213,12 @@ public class QuestionViewController : MonoBehaviour
 
     private void ShowPrizePanel(int qNum)
     {
-        Debug.Log("Next q -> " + (qNum + 1));
+        qNum++;
         prizePanel.SetActive(true);
+        fireProfit.text = "$ " + Player.GetLosePrize(qNum);
+        nextPrizeText.text = "$ " + Player.prizes[qNum];
+        nextQuestion.text = (qNum + 1) + "/15";
+
         // animation, show prize
     }
 

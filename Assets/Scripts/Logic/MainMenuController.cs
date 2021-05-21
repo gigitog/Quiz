@@ -29,7 +29,7 @@ public class MainMenuController : MonoBehaviour
 
     public void SaveData()
     {
-        new TempGetter().SavePlayerData(p.Data());
+        new TempGetter().SavePlayerData(p.GetData());
     }
 
     public void SwitchSound(bool isOn)

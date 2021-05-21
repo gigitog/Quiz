@@ -6,15 +6,15 @@ public class Statistic
     public int correct;
     public int wrong;
 
-    public void AddCorrect()
+    public Statistic()
     {
-        correct += 1;
+        correct = 0; 
+        wrong = 0;
     }
 
-    public void AddWrong()
-    {
-        wrong += 1;
-    }
+    public void AddCorrect() => correct += 1;
+
+    public void AddWrong() => wrong += 1;
 
     public float GetStatistic()
     {

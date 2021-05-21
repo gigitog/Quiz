@@ -12,17 +12,17 @@ public static class QuestionBank
 
     public static Question[] GetQuestionPool(out string[] correctAnswers, Player player = null)
     {
-        var usedIds = new List<int>();
+        List<int> usedIds = new List<int>();
         correctAnswers = new string[POOLSIZE];
         var qs = new Question[POOLSIZE];
         for (byte i = 0; i < POOLSIZE; i++)
         {
-            var dif = i >= 11 ? 2 : i >= 6 ? 1 : 0;
+            int dif = i >= 11 ? 2 : i >= 6 ? 1 : 0;
             qs[i] = GetRandomQuestion(dif, qs, player, usedIds);
             correctAnswers[i] = qs[i].answers[correctAnswId];
         }
 
-        var ss = "";
+        string ss = "";
         foreach (var q in qs) ss += $"qid: {q.id} \nq: {q.question} \n---\n";
         Debug.LogWarning(ss);
         return qs;
@@ -31,9 +31,9 @@ public static class QuestionBank
     // подправить потом ids
     private static Question GetRandomQuestion(int difficulty, Question[] qs, Player player, List<int> usedIds)
     {
-        var size = difficulty == 0 ? ez : difficulty == 1 ? med : hard;
-        var id = Random.Range(0, size);
-        for (var i = 0; i < POOLSIZE; i++)
+        int size = difficulty == 0 ? ez : difficulty == 1 ? med : hard;
+        int id = Random.Range(0, size);
+        for (int i = 0; i < POOLSIZE; i++)
         {
             id = Random.Range(0, size);
             if (usedIds.Contains(id))
@@ -41,6 +41,15 @@ public static class QuestionBank
             usedIds.Add(id);
         }
 
-        return Questions[difficulty][id];
+        Question q = new Question
+        {
+            question = Questions[difficulty][id].question,
+            id = Questions[difficulty][id].id,
+            answers = new string[4]
+        };
+        for (int j = 0; j < 4; j++)
+            q.answers[j] = Questions[difficulty][id].answers[j];
+        
+        return q;
     }
 }

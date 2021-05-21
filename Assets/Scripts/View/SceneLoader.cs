@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 
 public class SceneLoader : MonoBehaviour
 {
-    private const float Time = 1.5f;
+    private const float Time = 1f;
     public GameObject crossfadeObj;
     private CanvasGroup crossfade;
 
@@ -31,9 +31,10 @@ public class SceneLoader : MonoBehaviour
     {
         Animate(false);
 
-        yield return new WaitForSeconds(Time + 0.1f);
+        yield return new WaitForSeconds(Time + 0.2f);
 
-        StartCoroutine(LoadAsynch(indexScene));
+        LoadScene(indexScene);
+        //StartCoroutine(LoadAsynch(indexScene));
     }
 
     private void Animate(bool isEnd)
@@ -63,5 +64,10 @@ public class SceneLoader : MonoBehaviour
 
             yield return null;
         }
+    }
+
+    private void LoadScene(int scene)
+    {
+        SceneManager.LoadScene(scene);
     }
 }

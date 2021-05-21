@@ -4,17 +4,17 @@ using Random = System.Random;
 
 public class PlayerSession : MonoBehaviour
 {
-    public TextAsset textq;
+    private const int PoolSize = 15;
+    public TextAsset textQ;
     public int currentQuestionNum;
     private string[] answers;
-    private bool[] hints = {true, true, true, true};
-    private const int Poolsize = 15;
+    private readonly bool[] hints = {true, true, true, true};
     
-    [HideInInspector] public QuestionViewController qvc;
-    private AudioManager audioM;
+    private Question[] questions;
     private Question currentQuestion;
     private Player p;
-    private Question[] questions;
+    private AudioManager audioM;
+    private readonly Random rnd = new Random();
     
     public event EventHandler<AnswerArgs> OnAnswer;
     public event EventHandler<HintArgs> OnHint;
@@ -24,35 +24,28 @@ public class PlayerSession : MonoBehaviour
     private void Awake()
     {
         Debug.Log("Started!");
+        // set player
+        p = new Player(new TempGetter().LoadPlayerData());
+        
+        // additional load
+        if (QuestionBank.Questions == null || QuestionBank.Questions.Count < 1)
+            QuestionBank.Questions = new TempGetter(textQ.text).LoadQuestionBank();
+
+        // get questions for session
+        questions = QuestionBank.GetQuestionPool(out answers, p);
+        
+        currentQuestionNum = -1; // set it to -1, cause in OnNextQuestion it will +1
+        audioM = AudioManager.Instance;
     }
 
     private void Start()
     {
-        qvc = GetComponent<QuestionViewController>();
-        p = new Player(new TempGetter().LoadPlayerData());
-
-        if (QuestionBank.Questions == null || QuestionBank.Questions.Count < 1)
-            QuestionBank.Questions = new TempGetter(textq.text).LoadQuestionBank();
-
-        questions = QuestionBank.GetQuestionPool(out answers, p);
-
-        currentQuestionNum = -1;
+        // get next question (first one)
         OnNextQuestion();
-        audioM = AudioManager.Instance;
     }
-
-    private void OnApplicationPause(bool pause)
-    {
-        Debug.Log("App Paused");
-        if (pause) SaveData();
-    }
-
-    private void OnApplicationQuit()
-    {
-        Debug.Log("OnApplicationQuit");
-        SaveData();
-    }
-
+    
+    #region QuestionAnswer
+    
     /*
      * It's button func in PrizesPanel
      */
@@ -67,7 +60,7 @@ public class PlayerSession : MonoBehaviour
         currentQuestionNum++;
         currentQuestion = questions[currentQuestionNum];
 
-        QuestionsHandler.Shuffle(new Random(), currentQuestion.answers);
+        QuestionsHandler.Shuffle(rnd, currentQuestion.answers);
 
         OnNextQuestionData?.Invoke(this,
             new NewQuestionArgs {q = questions[currentQuestionNum], qNum = currentQuestionNum});
@@ -78,22 +71,28 @@ public class PlayerSession : MonoBehaviour
      */
     public void OnAnswerClicked(int choice)
     {
-        var last = currentQuestionNum == Poolsize - 1;
-        var correct = currentQuestion.answers[choice] == answers[currentQuestionNum];
-
         audioM.Click();
-        p.AddAnsweredQuestion(currentQuestion.id, correct);
-        if (correct && last)
+        
+        var isLast = currentQuestionNum == PoolSize - 1;
+        var isCorrect = currentQuestion.answers[choice] == answers[currentQuestionNum];
+
+        p.AddAnsweredQuestion(currentQuestion.id, isCorrect);
+        if (isCorrect && isLast)
             PlayerWin();
-        else if (!correct) PlayerLose();
+        else if (!isCorrect) PlayerLose();
         OnAnswer?.Invoke(this, new AnswerArgs
         {
-            correct = correct,
+            correct = isCorrect,
             choice = choice,
             qNum = currentQuestionNum,
             correctChoice = GetCorrectChoice()
         });
     }
+    
+    #endregion
+    
+    #region HintButtons
+    
     public void OnHintClosed()
     {
         audioM.Click();
@@ -134,6 +133,10 @@ public class PlayerSession : MonoBehaviour
         } );
     }
 
+    #endregion
+    
+    #region WarningButton
+
     /*
      * It's button func on WarningButton
      */
@@ -142,7 +145,7 @@ public class PlayerSession : MonoBehaviour
         audioM.Click();
         OnWarning?.Invoke(this, new WarningArgs {action = MyAction.Open});
     }
-
+    
     /*
      * It's button func on WarningButton
      */
@@ -153,7 +156,7 @@ public class PlayerSession : MonoBehaviour
         Debug.LogWarning("Warning on the question!");
         OnWarning?.Invoke(this, new WarningArgs {action = MyAction.Confirm});
     }
-
+    
     /*
      * It's button func on WarningButton
      */
@@ -162,6 +165,10 @@ public class PlayerSession : MonoBehaviour
         audioM.Click();
         OnWarning?.Invoke(this, new WarningArgs {action = MyAction.Close});
     }
+
+    #endregion
+
+    #region ExitButton
 
     /*
      * It's button func on ExitButton
@@ -184,9 +191,13 @@ public class PlayerSession : MonoBehaviour
 
     public void OnExitBackClicked()
     {
-        audioM.Click();
+        audioM.Click(); // hello
         OnExit?.Invoke(this, new ExitArgs {action = MyAction.Close});
     }
+
+    #endregion
+
+    #region GameEndFunctions
 
     private void PlayerWin()
     {
@@ -206,10 +217,7 @@ public class PlayerSession : MonoBehaviour
         SaveData();
     }
 
-    public void SaveData()
-    {
-        if (p != null) new TempGetter().SavePlayerData(p.Data());
-    }
+    #endregion
     
     private int GetCorrectChoice()
     {
@@ -218,4 +226,21 @@ public class PlayerSession : MonoBehaviour
                 return i;
         return 0;
     }
+    
+    private void SaveData()
+    {
+        if (p != null) new TempGetter().SavePlayerData(p.GetData());
+    }
+    private void OnApplicationPause(bool pause)
+    {
+        Debug.Log("App Paused");
+        if (pause) SaveData();
+    }
+
+    private void OnApplicationQuit()
+    {
+        Debug.Log("OnApplicationQuit");
+        SaveData();
+    }
+
 }

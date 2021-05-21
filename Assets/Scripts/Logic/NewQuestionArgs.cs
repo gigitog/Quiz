@@ -45,3 +45,11 @@ public class HintArgs : EventArgs
     public MyHint hint;
     public int correctChoice;
 }
+
+public enum GameState
+{
+    Answering,
+    Waiting,
+    Resulting,
+    Ending
+}

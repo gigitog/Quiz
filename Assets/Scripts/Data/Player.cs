@@ -41,10 +41,10 @@ public class Player
     public Player(PlayerData d)
     {
         _money = d.money;
-        Stats = d.stats;
-        last20Q = d.last20Q;
+        Stats = d.stats ?? new Statistic();
+        last20Q = d.last20Q ?? new Queue<int>();
     }
-    public PlayerData Data()
+    public PlayerData GetData()
     {
         return new PlayerData
         {
@@ -62,21 +62,16 @@ public class Player
         last20Q.Enqueue(id);
         if (last20Q.Count > 20) 
             last20Q.Dequeue();
+        
         if (correct)
             Stats.AddCorrect();
         else
             Stats.AddWrong();
     }
 
-    public void Win()
-    {
-        Money += prizes[14];
-    }
+    public void Win() => Money += prizes[14];
 
-    public void Lose(int qNum)
-    {
-        Money += GetLosePrize(qNum);
-    }
+    public void Lose(int qNum) => Money += GetLosePrize(qNum);
 
     public static long GetLosePrize(int qNum)
     {
