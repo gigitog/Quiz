@@ -1,12 +1,22 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-public class TempGetter
-{
-    public static PlayerData LoadPlayerData() => DataSaver.LoadData<PlayerData>("player") ?? new PlayerData();
+#endregion
 
-    public static void SavePlayerData(PlayerData p) => DataSaver.SaveData(p, "player");
+public static class DataGetter
+{
+    public static PlayerData LoadPlayerData()
+    {
+        return DataSaver.LoadData<PlayerData>("player") ?? new PlayerData();
+    }
+
+    public static void SavePlayerData(PlayerData p)
+    {
+        DataSaver.SaveData(p, "player");
+    }
 
     public static List<List<Question>> LoadQuestionBank(string text)
     {

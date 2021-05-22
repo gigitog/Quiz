@@ -1,24 +1,35 @@
-﻿using System;
+﻿#region
+
+using System;
+
+#endregion
 
 [Serializable]
 public class Statistic
 {
-    public int correct;
-    public int wrong;
-
     public Statistic()
     {
-        correct = 0; 
-        wrong = 0;
+        Correct = 0;
+        Wrong = 0;
     }
 
-    public void AddCorrect() => correct += 1;
-
-    public void AddWrong() => wrong += 1;
-
-    public float GetStatistic()
+    public Statistic(int c, int w)
     {
-        if (correct == 0) return 0;
-        return correct / (correct + wrong + 0f);
+        Correct = c;
+        Wrong = w;
+    }
+
+    public int Correct { get; private set; }
+    public int Wrong { get; private set; }
+    public float Ratio => Correct == 0 ? 0f : Correct / (Correct + Wrong + 0f);
+
+    public void AddCorrect()
+    {
+        Correct += 1;
+    }
+
+    public void AddWrong()
+    {
+        Wrong += 1;
     }
 }

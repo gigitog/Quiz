@@ -1,5 +1,10 @@
-﻿using System.Collections.Generic;
+﻿#region
 
+using System;
+
+#endregion
+
+[Serializable]
 public struct Question
 {
     public int id;

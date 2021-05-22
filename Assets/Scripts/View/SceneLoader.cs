@@ -1,7 +1,11 @@
-﻿using System.Collections;
+﻿#region
+
+using System.Collections;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
+#endregion
 
 /*
  * Class in charge of animation of scene
@@ -10,60 +14,64 @@ using UnityEngine.SceneManagement;
 
 public class SceneLoader : MonoBehaviour
 {
-    private const float Time = 1f;
+    private const float FadeTime = 0.9f;
+    private const float LogoTime = 0.4f;
     public GameObject crossfadeObj;
     private CanvasGroup crossfade;
 
     private void Start()
     {
         crossfade = crossfadeObj.GetComponent<CanvasGroup>();
-        var y = SceneManager.GetActiveScene().buildIndex;
-        Animate(true);
+
+        AnimateFadeOut();
     }
 
     public void LoadSceneClick(int id)
     {
         AudioManager.Instance.Click();
-        StartCoroutine(Load(id));
+
+        AnimateFadeIn();
+
+        LoadSceneAfterFade(id);
     }
 
-    private IEnumerator Load(int indexScene)
+    private void LoadSceneAfterFade(int id)
     {
-        Animate(false);
-
-        yield return new WaitForSeconds(Time + 0.2f);
-
-        LoadScene(indexScene);
-        //StartCoroutine(LoadAsynch(indexScene));
+        StartCoroutine(Co_Load(id));
     }
 
-    private void Animate(bool isEnd)
+    private void AnimateFadeIn()
     {
-        if (!isEnd) crossfadeObj.SetActive(true);
-        else StartCoroutine(DisableAfterTime(crossfadeObj));
-
-        crossfade.DOFade(isEnd ? 0f : 1f, Time);
+        crossfadeObj.SetActive(true);
+        crossfade.DOFade(1f, FadeTime);
     }
 
-    private IEnumerator DisableAfterTime(GameObject g)
+    private void AnimateFadeOut()
     {
-        yield return new WaitForSeconds(Time + 0.1f);
+        StartCoroutine(Co_FadeOutAfterSeconds(crossfadeObj));
+    }
+
+    private IEnumerator Co_FadeOutAfterSeconds(GameObject g)
+    {
+        var waitForLogo = new WaitForSeconds(LogoTime);
+        var waitForFadeOut = new WaitForSeconds(FadeTime + 0.1f);
+
+        yield return waitForLogo;
+
+        crossfade.DOFade(0f, FadeTime);
+
+        yield return waitForFadeOut;
+
         g.SetActive(false);
     }
 
-    private IEnumerator LoadAsynch(int scene)
+    private IEnumerator Co_Load(int indexScene)
     {
-        var operation = SceneManager.LoadSceneAsync(scene);
+        var waitForFadeIn = new WaitForSeconds(FadeTime + LogoTime);
 
-        while (!operation.isDone)
-        {
-            if (operation.progress == 0.9f)
-            {
-                //CurrentView.indexScene = systemIndex;
-            }
+        yield return waitForFadeIn;
 
-            yield return null;
-        }
+        LoadScene(indexScene);
     }
 
     private void LoadScene(int scene)

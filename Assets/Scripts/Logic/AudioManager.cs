@@ -1,5 +1,9 @@
-﻿using System;
+﻿#region
+
+using System;
 using UnityEngine;
+
+#endregion
 
 public class AudioManager : MonoBehaviour
 {
@@ -19,9 +23,7 @@ public class AudioManager : MonoBehaviour
     {
         isMusicOn = GetMusic;
         isSoundsOn = GetSound;
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
-        DontDestroyOnLoad(gameObject);
+        SetSingleton();
 
         foreach (var s in sounds)
         {
@@ -36,6 +38,13 @@ public class AudioManager : MonoBehaviour
     private void Start()
     {
         PlayTheme();
+    }
+
+    private void SetSingleton()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+        DontDestroyOnLoad(gameObject);
     }
 
     private void PlayTheme()

@@ -1,10 +1,14 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
 using UnityEngine;
 
-public class DataSaver
+#endregion
+
+public static class DataSaver
 {
     //Save Data
     public static void SaveData<T>(T dataToSave, string dataFileName)
@@ -44,7 +48,7 @@ public class DataSaver
         if (!Directory.Exists(Path.GetDirectoryName(tempPath)))
         {
             Debug.LogWarning("Directory does not exist");
-            Directory.CreateDirectory(Path.GetDirectoryName(tempPath));
+            Directory.CreateDirectory(Path.Combine(Application.persistentDataPath, "data"));
             File.Create(tempPath);
             return default;
         }
@@ -74,7 +78,8 @@ public class DataSaver
 
         //Convert to Object
         object resultValue = JsonConvert.DeserializeObject<T>(jsonData);
-        return (T) Convert.ChangeType(resultValue, typeof(T));
+        var returnVar = (T) Convert.ChangeType(resultValue, typeof(T));
+        return returnVar;
     }
 
     public static bool DeleteData(string dataFileName)

@@ -1,10 +1,14 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
+
+#endregion
 
 internal class TextQuestionsReader
 {
@@ -51,7 +55,7 @@ internal class TextQuestionsReader
         }
 
         //Convert to txt string
-        var txtData = Encoding.UTF8.GetString(txtByte);
+        var txtData = Encoding.UTF8.GetString(txtByte ?? Array.Empty<byte>());
 
         //Convert to Object
         return GetQuestionsByDiff(txtData, numQ);
@@ -90,7 +94,7 @@ internal class TextQuestionsReader
      */
     private static Question GetQuestionFromString(string[] lines)
     {
-        var patternNumber = @"\d+\. ";
+        const string patternNumber = @"\d+\. ";
         var answers = new string[4];
         var question = new Question();
         // set question's id, text and answers 

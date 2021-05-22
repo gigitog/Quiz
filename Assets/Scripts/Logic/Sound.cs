@@ -1,5 +1,9 @@
-﻿using System;
+﻿#region
+
+using System;
 using UnityEngine;
+
+#endregion
 
 [Serializable]
 public class Sound

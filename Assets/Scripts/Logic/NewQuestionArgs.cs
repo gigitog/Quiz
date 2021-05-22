@@ -1,4 +1,8 @@
-﻿using System;
+﻿#region
+
+using System;
+
+#endregion
 
 public class NewQuestionArgs : EventArgs
 {
@@ -16,11 +20,11 @@ public class AnswerArgs : EventArgs
 
 public class ExitArgs : EventArgs
 {
-    public MyAction action;
+    public WindowAction action;
     public int qNum;
 }
 
-public enum MyAction
+public enum WindowAction
 {
     Open,
     Close,
@@ -29,7 +33,7 @@ public enum MyAction
 
 public class WarningArgs : EventArgs
 {
-    public MyAction action;
+    public WindowAction action;
 }
 
 public enum MyHint
@@ -40,11 +44,13 @@ public enum MyHint
     HSwitch = 3,
     HClose = 4
 }
+
 public class HintArgs : EventArgs
 {
-    public MyHint hint;
     public int correctChoice;
+    public MyHint hint;
 }
+
 // TODO: do smth with this
 public enum GameState
 {

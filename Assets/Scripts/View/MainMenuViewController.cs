@@ -1,24 +1,29 @@
-﻿using System.Globalization;
+﻿#region
+
+using System.Globalization;
 using Michsky.UI.ModernUIPack;
 using UnityEngine;
 using UnityEngine.UI;
-class MainMenuViewController : MonoBehaviour
+
+#endregion
+
+public class MainMenuViewController : MonoBehaviour
 {
-    public Text profit;
-    public Player player;
-    public GameObject prefsPanel;
-    public GameObject statsPanel;
-    public GameObject creditsPanel;
-    public SwitchManager[] managers;
+    [SerializeField] private Text profit;
+    [SerializeField] private GameObject prefsPanel;
+    [SerializeField] private GameObject statsPanel;
+    [SerializeField] private GameObject creditsPanel;
+    [SerializeField] private SwitchManager[] managers;
+    [SerializeField] private Text correctNum;
+    [SerializeField] private Text wrongNum;
+    [SerializeField] private Text ratio;
     private AudioManager am;
-    public Text correctNum;
-    public Text wrongNum;
-    public Text ratio;
+    private Player player;
 
     private void Start()
     {
         am = AudioManager.Instance;
-        player = GetComponent<MainMenuController>().Player;
+        player = Player.Instance;
         profit.text = "$ " + player.Money; // написать money prettifier
     }
 
@@ -41,15 +46,14 @@ class MainMenuViewController : MonoBehaviour
     {
         am.Click();
         statsPanel.SetActive(true);
-        correctNum.text = player.Stats.correct.ToString();
-        wrongNum.text = player.Stats.wrong.ToString();
-        ratio.text = player.Stats.GetStatistic().ToString("F", CultureInfo.CurrentCulture);
+        correctNum.text = player.Stats.Correct.ToString();
+        wrongNum.text = player.Stats.Wrong.ToString();
+        ratio.text = player.Stats.Ratio.ToString("F", CultureInfo.CurrentCulture);
     }
 
     public void CloseStatsPanel()
     {
         am.Click();
         statsPanel.SetActive(false);
-
     }
 }
