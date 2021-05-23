@@ -48,7 +48,7 @@ public class QuestionViewController : MonoBehaviour
     private void Awake()
     {
         ps = GetComponent<PlayerSession>();
-        ps.OnNextQuestionData += Ps_OnNextQuestionData;
+        ps.OnNewQuestionData += PsOnNewQuestionData;
         ps.OnAnswer += Ps_OnAnswer;
         ps.OnExit += Ps_OnExit;
         ps.OnWarning += Ps_OnWarning;
@@ -89,7 +89,7 @@ public class QuestionViewController : MonoBehaviour
         }
     }
 
-    private void Ps_OnNextQuestionData(object sender, NewQuestionArgs e)
+    private void PsOnNewQuestionData(object sender, NewQuestionArgs e)
     {
         prizePanel.SetActive(false);
         disablerButtons.SetActive(false);

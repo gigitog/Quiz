@@ -12,6 +12,7 @@ using Random = UnityEngine.Random;
 public class QuestionBank : MonoBehaviour
 {
     private const byte PoolSize = 15;
+    private const byte DifficultyLevels = 3;
     private const byte CorrectAnswerId = 3;
     [SerializeField] private TextAsset textQuestions;
 
@@ -40,24 +41,43 @@ public class QuestionBank : MonoBehaviour
         Questions = DataGetter.LoadQuestionBank(textQuestions.text);
     }
 
-    public Question[] GetQuestionPool(out string[] correctAnswers, Player player = null)
+    public Question[] GetQuestionPool(out string[] correctAnswers, 
+            out Question[] tipQuestions, 
+            out string[] correctTipAnswers, 
+            Player player = null)
     {
         List<int> usedIds = SetUsedIds(player);
         var questionPool = new Question[PoolSize];
-
         correctAnswers = new string[PoolSize];
+        tipQuestions = new Question[DifficultyLevels];
+        correctTipAnswers = new string[DifficultyLevels];
 
+        SetQuestionPool(correctAnswers, questionPool, usedIds);
+        SetTipQuestions(tipQuestions, correctTipAnswers, usedIds);
+
+        // string ss = "";
+        // foreach (var q in qs) ss += $"qid: {q.id} \nq: {q.question} \n---\n";
+        // Debug.LogWarning(ss);
+        return questionPool;
+    }
+
+    private void SetTipQuestions(Question[] tipQuestions, string[] correctTipAnswers, List<int> usedIds)
+    {
+        for (int i = 0; i < DifficultyLevels; i++)
+        {
+            tipQuestions[i] = GetRandomQuestion(i, usedIds);
+            correctTipAnswers[i] = tipQuestions[i].answers[CorrectAnswerId];
+        }
+    }
+
+    private void SetQuestionPool(string[] correctAnswers, Question[] questionPool, List<int> usedIds)
+    {
         for (byte i = 0; i < PoolSize; i++)
         {
             int difficulty = i >= 10 ? 2 : i >= 5 ? 1 : 0;
             questionPool[i] = GetRandomQuestion(difficulty, usedIds);
             correctAnswers[i] = questionPool[i].answers[CorrectAnswerId];
         }
-
-        // string ss = "";
-        // foreach (var q in qs) ss += $"qid: {q.id} \nq: {q.question} \n---\n";
-        // Debug.LogWarning(ss);
-        return questionPool;
     }
 
     private static List<int> SetUsedIds(Player player)

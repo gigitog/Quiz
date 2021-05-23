@@ -19,15 +19,22 @@ public class PlayerSession : MonoBehaviour
 
     private Player p;
     private QuestionBank questionBank;
-    private string[] sessionAnswers;
-
     private Question[] sessionQuestions;
+    private string[] sessionAnswers;
+    private Question[] tipQuestions;
+    private string[] tipAnswers;
 
     private void Awake()
     {
         SetSingletons();
 
-        sessionQuestions = questionBank.GetQuestionPool(out sessionAnswers, p);
+        SetEventSubscribers();
+
+        sessionQuestions = questionBank.GetQuestionPool(
+            out sessionAnswers, 
+            out tipQuestions, 
+            out tipAnswers, 
+            p);
 
         currentQuestionNum = -1; // set it to -1, cause in OnNextQuestion it will +1
     }
@@ -42,8 +49,23 @@ public class PlayerSession : MonoBehaviour
     public event EventHandler<HintArgs> OnHint;
     public event EventHandler<ExitArgs> OnExit;
     public event EventHandler<WarningArgs> OnWarning;
-    public event EventHandler<NewQuestionArgs> OnNextQuestionData;
+    public event EventHandler<NewQuestionArgs> OnNewQuestionData;
 
+    private void SetEventSubscribers()
+    {
+        OnHint += (sender, args) =>
+        {
+            if (args.hint != MyHint.HSwitch) return;
+            
+            int difficulty = currentQuestionNum >= 10 ? 2 :
+                currentQuestionNum >= 5 ? 1 : 0;
+            sessionQuestions[currentQuestionNum] = tipQuestions[difficulty];
+            sessionAnswers[currentQuestionNum] = tipAnswers[difficulty];
+            
+            SetNewQuestion();
+        };
+    }
+    
     private void SetSingletons()
     {
         SetPlayer();
@@ -51,26 +73,18 @@ public class PlayerSession : MonoBehaviour
         SetQuestionBank();
     }
 
-    private void SetPlayer()
-    {
-        p = Player.Instance;
-    }
+    private void SetPlayer() => p = Player.Instance;
 
-    private void SetAudioManager()
-    {
-        audioM = AudioManager.Instance;
-    }
+    private void SetAudioManager() => audioM = AudioManager.Instance;
 
-    private void SetQuestionBank()
-    {
-        questionBank = QuestionBank.Instance;
-    }
+    private void SetQuestionBank() => questionBank = QuestionBank.Instance;
 
     private int GetCorrectChoice()
     {
         for (var i = 0; i < 4; i++)
             if (currentQuestion.answers[i].Equals(sessionAnswers[currentQuestionNum]))
                 return i;
+        Debug.LogError("NO CORRECT ANSWER");
         return 0;
     }
 
@@ -88,11 +102,16 @@ public class PlayerSession : MonoBehaviour
     private void OnNextQuestion()
     {
         currentQuestionNum++;
+        SetNewQuestion();
+    }
+
+    private void SetNewQuestion()
+    {
         currentQuestion = sessionQuestions[currentQuestionNum];
 
         QuestionsHandler.Shuffle(rnd, currentQuestion.answers);
 
-        OnNextQuestionData?.Invoke(this,
+        OnNewQuestionData?.Invoke(this,
             new NewQuestionArgs {q = sessionQuestions[currentQuestionNum], qNum = currentQuestionNum});
     }
 
