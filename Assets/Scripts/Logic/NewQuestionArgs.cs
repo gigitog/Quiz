@@ -36,6 +36,12 @@ public class WarningArgs : EventArgs
     public WindowAction action;
 }
 
+public class QuestionAPIArgs : EventArgs
+{
+    public bool connection;
+    public Question question;
+}
+
 public enum MyHint
 {
     H5050 = 0,
@@ -58,4 +64,11 @@ public enum GameState
     Waiting,
     Resulting,
     Ending
+}
+
+public enum QuestionDifficulty
+{
+    Easy = 1,
+    Medium = 2,
+    Hard = 3
 }

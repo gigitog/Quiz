@@ -9,20 +9,19 @@ using Random = System.Random;
 public class PlayerSession : MonoBehaviour
 {
     private const int PoolSize = 15;
-
+    
     private readonly Random rnd = new Random();
     private readonly bool[] sessionHints = {true, true, true, true};
     private AudioManager audioM;
+    private QuestionWebGetter qwg;
 
     private Question currentQuestion;
     private int currentQuestionNum;
 
+    private int lives = 2;
     private Player p;
     private QuestionBank questionBank;
-    private Question[] sessionQuestions;
-    private string[] sessionAnswers;
-    private Question[] tipQuestions;
-    private string[] tipAnswers;
+    private QuestionPool pool;
 
     private void Awake()
     {
@@ -30,15 +29,11 @@ public class PlayerSession : MonoBehaviour
 
         SetEventSubscribers();
 
-        sessionQuestions = questionBank.GetQuestionPool(
-            out sessionAnswers, 
-            out tipQuestions, 
-            out tipAnswers, 
-            p);
+        SetSessionQuestions();
 
         currentQuestionNum = -1; // set it to -1, cause in OnNextQuestion it will +1
     }
-
+    
     private void Start()
     {
         // get next question (first one)
@@ -51,6 +46,8 @@ public class PlayerSession : MonoBehaviour
     public event EventHandler<WarningArgs> OnWarning;
     public event EventHandler<NewQuestionArgs> OnNewQuestionData;
 
+    #region AwakeSetters
+    
     private void SetEventSubscribers()
     {
         OnHint += (sender, args) =>
@@ -59,18 +56,19 @@ public class PlayerSession : MonoBehaviour
             
             int difficulty = currentQuestionNum >= 10 ? 2 :
                 currentQuestionNum >= 5 ? 1 : 0;
-            sessionQuestions[currentQuestionNum] = tipQuestions[difficulty];
-            sessionAnswers[currentQuestionNum] = tipAnswers[difficulty];
+            pool.SetQuestion(pool.tipQuestions[difficulty], currentQuestionNum);
             
             SetNewQuestion();
         };
+        qwg.OnGetQuestion += ReceiveQuestion;
     }
-    
+
     private void SetSingletons()
     {
         SetPlayer();
         SetAudioManager();
         SetQuestionBank();
+        SetQuestionWebGetter();
     }
 
     private void SetPlayer() => p = Player.Instance;
@@ -78,16 +76,13 @@ public class PlayerSession : MonoBehaviour
     private void SetAudioManager() => audioM = AudioManager.Instance;
 
     private void SetQuestionBank() => questionBank = QuestionBank.Instance;
+    
+    private void SetQuestionWebGetter() => qwg = QuestionWebGetter.Instance;
 
-    private int GetCorrectChoice()
-    {
-        for (var i = 0; i < 4; i++)
-            if (currentQuestion.answers[i].Equals(sessionAnswers[currentQuestionNum]))
-                return i;
-        Debug.LogError("NO CORRECT ANSWER");
-        return 0;
-    }
+    private void SetSessionQuestions() => pool = questionBank.GetQuestionPoolFromLocal(p);
 
+    #endregion
+    
     #region QuestionAnswer
 
     /*
@@ -105,16 +100,28 @@ public class PlayerSession : MonoBehaviour
         SetNewQuestion();
     }
 
-    private void SetNewQuestion()
+    private void SetNewQuestion() => qwg.GetRandomQuestionFromServer(currentQuestionNum);
+
+    private void ReceiveQuestion(object sender, QuestionAPIArgs args)
     {
-        currentQuestion = sessionQuestions[currentQuestionNum];
+        if (args.connection)
+            SetNewQuestionData(args.question);
+        else 
+            SetNewQuestionData(pool.questions[currentQuestionNum]);
+    }
+
+    private void SetNewQuestionData(Question q)
+    {
+        pool.SetQuestion(q, currentQuestionNum);
+        currentQuestion = q;
 
         QuestionsHandler.Shuffle(rnd, currentQuestion.answers);
 
         OnNewQuestionData?.Invoke(this,
-            new NewQuestionArgs {q = sessionQuestions[currentQuestionNum], qNum = currentQuestionNum});
+            new NewQuestionArgs {q = pool.questions[currentQuestionNum], qNum = currentQuestionNum});
     }
-
+    
+    
     /*
      * It's button func on AnswerButton
      */
@@ -123,12 +130,15 @@ public class PlayerSession : MonoBehaviour
         audioM.Click();
 
         var isLast = currentQuestionNum == PoolSize - 1;
-        var isCorrect = currentQuestion.answers[choice] == sessionAnswers[currentQuestionNum];
+        var isCorrect = currentQuestion.answers[choice] == pool.answers[currentQuestionNum];
 
         p.AddAnsweredQuestion(currentQuestion.id, isCorrect);
+        
         if (isCorrect && isLast)
             PlayerWin();
-        else if (!isCorrect) PlayerLose();
+        else if (!isCorrect && lives == 0)
+            PlayerLose();
+        
         OnAnswer?.Invoke(this, new AnswerArgs
         {
             correct = isCorrect,
@@ -246,6 +256,19 @@ public class PlayerSession : MonoBehaviour
     private void PlayerExit()
     {
         p.Exit(currentQuestionNum);
+    }
+
+    #endregion
+
+    #region Utils
+
+    private int GetCorrectChoice()
+    {
+        for (var i = 0; i < 4; i++)
+            if (currentQuestion.answers[i].Equals(pool.answers[currentQuestionNum]))
+                return i;
+        Debug.LogError("NO CORRECT ANSWER");
+        return 0;
     }
 
     #endregion

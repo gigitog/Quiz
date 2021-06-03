@@ -16,67 +16,54 @@ public class QuestionBank : MonoBehaviour
     private const byte CorrectAnswerId = 3;
     [SerializeField] private TextAsset textQuestions;
 
-    [SerializeField] private int ez = 100;
-    [SerializeField] private int med = 100;
-    [SerializeField] private int hard = 100;
+    [SerializeField] private int ezNUm = 100;
+    [SerializeField] private int medNum = 100;
+    [SerializeField] private int hardNum = 100;
     public static QuestionBank Instance { get; private set; }
+    public QuestionWebGetter qwg;
     private List<List<Question>> Questions { get; set; }
 
     private void Awake()
     {
         SetSingleton();
-
-        LoadQuestionBank();
+        qwg = QuestionWebGetter.Instance;
+        LoadLocalQuestionBank();
     }
-
-    private void SetSingleton()
-    {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
-        DontDestroyOnLoad(gameObject);
-    }
-
-    private void LoadQuestionBank()
-    {
-        Questions = DataGetter.LoadQuestionBank(textQuestions.text);
-    }
-
-    public Question[] GetQuestionPool(out string[] correctAnswers, 
-            out Question[] tipQuestions, 
-            out string[] correctTipAnswers, 
-            Player player = null)
+    
+    public QuestionPool GetQuestionPoolFromLocal(Player player = null)
     {
         List<int> usedIds = SetUsedIds(player);
-        var questionPool = new Question[PoolSize];
-        correctAnswers = new string[PoolSize];
-        tipQuestions = new Question[DifficultyLevels];
-        correctTipAnswers = new string[DifficultyLevels];
+        var pool = new QuestionPool()
+        {
+            questions = new Question[PoolSize],
+            answers = new string[PoolSize],
+            tipQuestions = new Question[DifficultyLevels],
+            tipAnswers = new string[DifficultyLevels]
+        };
 
-        SetQuestionPool(correctAnswers, questionPool, usedIds);
-        SetTipQuestions(tipQuestions, correctTipAnswers, usedIds);
+        SetQuestions(pool, usedIds);
+        SetTipQuestions(pool, usedIds);
 
         // string ss = "";
         // foreach (var q in qs) ss += $"qid: {q.id} \nq: {q.question} \n---\n";
         // Debug.LogWarning(ss);
-        return questionPool;
+        return pool;
     }
 
-    private void SetTipQuestions(Question[] tipQuestions, string[] correctTipAnswers, List<int> usedIds)
+    private void SetTipQuestions(QuestionPool pool, List<int> usedIds)
     {
         for (int i = 0; i < DifficultyLevels; i++)
         {
-            tipQuestions[i] = GetRandomQuestion(i, usedIds);
-            correctTipAnswers[i] = tipQuestions[i].answers[CorrectAnswerId];
+            pool.SetTipQuestion(GetRandomQuestion(i, usedIds), i);
         }
     }
 
-    private void SetQuestionPool(string[] correctAnswers, Question[] questionPool, List<int> usedIds)
+    private void SetQuestions(QuestionPool pool, List<int> usedIds)
     {
         for (byte i = 0; i < PoolSize; i++)
         {
             int difficulty = i >= 10 ? 2 : i >= 5 ? 1 : 0;
-            questionPool[i] = GetRandomQuestion(difficulty, usedIds);
-            correctAnswers[i] = questionPool[i].answers[CorrectAnswerId];
+            pool.SetQuestion(GetRandomQuestion(difficulty, usedIds), i);
         }
     }
 
@@ -88,7 +75,7 @@ public class QuestionBank : MonoBehaviour
 
     private Question GetRandomQuestion(int difficulty, List<int> usedIds)
     {
-        int size = difficulty == 0 ? ez : difficulty == 1 ? med : hard;
+        int size = difficulty == 0 ? ezNUm : difficulty == 1 ? medNum : hardNum;
 
         var id = GetRandomID(usedIds, size);
 
@@ -125,5 +112,17 @@ public class QuestionBank : MonoBehaviour
         }
 
         return id;
+    }
+    
+    private void SetSingleton()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+        DontDestroyOnLoad(gameObject);
+    }
+
+    private void LoadLocalQuestionBank()
+    {
+        Questions = DataGetter.LoadQuestionBank(textQuestions.text);
     }
 }

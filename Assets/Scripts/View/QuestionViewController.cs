@@ -13,9 +13,7 @@ using Random = System.Random;
 public class QuestionViewController : MonoBehaviour
 {
     private const int PoolSize = 15;
-
-    [HideInInspector] public PlayerSession ps;
-
+    
     [Header("UI")] public Text questionNum;
 
     public Text questionMoney;
@@ -43,6 +41,8 @@ public class QuestionViewController : MonoBehaviour
     private readonly Color red = new Color(1f, 119 / 255f, 119 / 255f);
     private readonly Random rnd = new Random();
 
+    
+    private PlayerSession ps;
     private AudioManager audioM;
 
     private void Awake()
@@ -96,8 +96,15 @@ public class QuestionViewController : MonoBehaviour
         SetQuestionData(e.q, e.qNum);
     }
 
+    
+    // TODO: Make "WatchAdPanel" show
+    // if user didn't watch yet
     private void ShowGameEnd(int qNum, long prize)
     {
+        // ad variable "isAdShown"
+        // if not = RevealAdPanel
+        // else RevealEndPanel
+        
         Debug.Log(qNum == PoolSize - 1 ? "WIN" : "LOSE/EXIT");
 
         endGamePrizeText.text = "$ " + prize;
@@ -107,9 +114,19 @@ public class QuestionViewController : MonoBehaviour
     private void RevealEndPanel()
     {
         // animate endGamePanel
+        // Show choice of watching an Ad to continue;
         endGamePanel.SetActive(true);
     }
 
+    private void RevealAdPanel()
+    {
+        // show some text
+        // choice: Ad to continue / No, thanks
+        // continue or lose
+        
+        // continue = ShowPrizePanel
+        // lose = RevealEndPanel 
+    }
     private void ShowPrizePanel(int qNum)
     {
         qNum++;
@@ -125,7 +142,7 @@ public class QuestionViewController : MonoBehaviour
     {
         questionNum.text = $"{num + 1}/15";
         questionMoney.text = "$" + GetQuestionPrize(num);
-        questionText.GetComponent<TextMeshProUGUI>().text = q.question;
+        questionText.GetComponent<Text>().text = q.question;
 
         for (var i = 0; i < 4; i++)
         {
@@ -222,8 +239,7 @@ public class QuestionViewController : MonoBehaviour
     private void Ps_OnAnswer(object sender, AnswerArgs e)
     {
         disablerButtons.SetActive(true);
-
-
+        
         // make button another color
         ansButtons[e.choice].GetComponent<Image>().color = orange;
 

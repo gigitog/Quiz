@@ -27,4 +27,6 @@ public static class DataGetter
 
         return bank;
     }
+    
+
 }
